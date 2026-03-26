@@ -1548,10 +1548,20 @@
            ============================================ */
         function renderPortfolio(filter = 'all') {
             const grid = document.getElementById('portfolioGrid');
+            if (!grid) {
+                console.error('Portfolio grid element not found!');
+                return;
+            }
             grid.innerHTML = '';
+
+            if (!portfolioItems || portfolioItems.length === 0) {
+                console.error('Portfolio items array is empty or undefined!');
+                return;
+            }
 
             const filtered = filter === 'all' ? portfolioItems : portfolioItems.filter(item => item.tag === filter);
             lightboxItems = filtered;
+            console.log('Rendering portfolio with', filtered.length, 'items for filter:', filter);
 
             filtered.forEach(item => {
                 const card = document.createElement('div');
@@ -1824,37 +1834,58 @@
         /* ============================================
            INITIALIZATION
            ============================================ */
-        document.addEventListener('DOMContentLoaded', () => {
-            // Render social icons
-            renderSocialIcons('heroSocialIcons');
-            renderSocialIcons('contactSocialIcons');
-            
-            // Set email link
-            const emailLink = document.getElementById('contactEmailLink');
-            if (emailLink) {
-                emailLink.href = `mailto:${CONFIG.email}`;
-                emailLink.textContent = CONFIG.email;
-            }
+        function initializePortfolio() {
+            try {
+                console.log('Initializing portfolio...');
+                
+                // Render social icons
+                renderSocialIcons('heroSocialIcons');
+                renderSocialIcons('contactSocialIcons');
+                
+                // Set email link
+                const emailLink = document.getElementById('contactEmailLink');
+                if (emailLink) {
+                    emailLink.href = `mailto:${CONFIG.email}`;
+                    emailLink.textContent = CONFIG.email;
+                }
 
-            createParticles();
-            typeAnimation();
-            renderPortfolio();
-            observeElements();
-            updateActiveNav();
+                createParticles();
+                typeAnimation();
+                renderPortfolio();
+                observeElements();
+                updateActiveNav();
+                
+                console.log('Portfolio initialized successfully!');
+            } catch (error) {
+                console.error('Error initializing portfolio:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializePortfolio();
 
             // Animate stats when about section comes into view
             const aboutSection = document.getElementById('about');
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting && !aboutSection.dataset.animated) {
-                        animateStats();
-                        aboutSection.dataset.animated = 'true';
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, { threshold: 0.5 });
-            observer.observe(aboutSection);
+            if (aboutSection) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting && !aboutSection.dataset.animated) {
+                            animateStats();
+                            aboutSection.dataset.animated = 'true';
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.5 });
+                observer.observe(aboutSection);
+            }
         });
+
+        // Fallback initialization if DOMContentLoaded has already fired
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializePortfolio);
+        } else {
+            initializePortfolio();
+        }
     </script>
 </body>
 </html>
